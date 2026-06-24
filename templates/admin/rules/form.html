@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Aturan - Admin ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-2">
+            <div class="admin-sidebar py-4">
+                <div class="px-4 mb-4">
+                    <span class="text-uppercase font-monospace text-muted small" style="letter-spacing:1px;">MENU ADMIN</span>
+                </div>
+                <nav class="d-flex flex-column gap-1">
+                    <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                        <i class="fa-solid fa-gauge me-3"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.diseases') }}" class="sidebar-link">
+                        <i class="fa-solid fa-virus me-3"></i> Data Penyakit
+                    </a>
+                    <a href="{{ url_for('admin.symptoms') }}" class="sidebar-link">
+                        <i class="fa-solid fa-list-check me-3"></i> Data Gejala
+                    </a>
+                    <a href="{{ url_for('admin.rules') }}" class="sidebar-link active">
+                        <i class="fa-solid fa-diagram-project me-3"></i> Basis Aturan
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="sidebar-link">
+                        <i class="fa-solid fa-users me-3"></i> Pengguna
+                    </a>
+                    <hr class="mx-3 my-2 text-black-50">
+                    <a href="{{ url_for('main.home') }}" class="sidebar-link">
+                        <i class="fa-solid fa-house-medical me-3"></i> Web Utama
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Form Column -->
+        <div class="col-lg-10 bg-light-subtle px-4 px-md-5 py-4">
+            <!-- Header section -->
+            <div class="mb-4">
+                <a href="{{ url_for('admin.rules') }}" class="btn btn-outline-slate btn-sm rounded-pill px-3 mb-3">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Kembali
+                </a>
+                <h3 class="fw-bold text-slate">{{ action }} Aturan Logika Baru</h3>
+                <p class="text-muted small">Hubungkan parameter klinis gejala (IF) ke kesimpulan diagnosis penyakit (THEN).</p>
+            </div>
+            
+            <!-- Visual IF-THEN Builder Card -->
+            <div class="card card-modern border-0 shadow-sm p-4 p-md-5 mb-4">
+                <form method="POST" action="{% if rule %}{{ url_for('admin.rule_edit', id=rule.id) }}{% else %}{{ url_for('admin.rule_add') }}{% endif %}">
+                    <div class="row g-4">
+                        <!-- Rule Code -->
+                        <div class="col-md-3">
+                            <label for="code" class="form-label fw-semibold text-slate small">Kode Aturan</label>
+                            <input type="text" class="form-control rounded-3 font-monospace" id="code" name="code" 
+                                   value="{% if rule %}{{ rule.code }}{% else %}{{ next_code }}{% endif %}" 
+                                   required placeholder="Contoh: R001">
+                        </div>
+                        
+                        <!-- Consequent Disease (THEN) -->
+                        <div class="col-md-9">
+                            <label for="disease_id" class="form-label fw-semibold text-slate small">THEN (Kesimpulan Penyakit)</label>
+                            <select class="form-select rounded-3 fs-6" id="disease_id" name="disease_id" required>
+                                <option value="" disabled selected>Pilih Penyakit Paru...</option>
+                                {% for d in diseases %}
+                                    <option value="{{ d.id }}" {% if rule and rule.disease_id == d.id %}selected{% endif %}>
+                                        [{{ d.code }}] {{ d.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Antecedent Symptoms (IF) -->
+                        <div class="col-12 mt-4">
+                            <label class="form-label fw-semibold text-slate d-block mb-2 small">IF (Kombinasi Gejala Penyebab)</label>
+                            <span class="text-muted small d-block mb-3">Pilih minimal satu gejala klinis yang memicu kesimpulan penyakit di atas.</span>
+                            
+                            <div class="row g-3">
+                                {% for s in symptoms %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <!-- Symptom checkbox card matching the consultation page style -->
+                                        <div class="symptom-card-check h-100 {% if rule_symptom_ids and s.id in rule_symptom_ids %}selected-active{% endif %}">
+                                            <input type="checkbox" name="symptoms" id="symptom_{{ s.id }}" value="{{ s.id }}"
+                                                   {% if rule_symptom_ids and s.id in rule_symptom_ids %}checked{% endif %}>
+                                            <div class="checkmark"></div>
+                                            <span class="symptom-name-text text-slate small">
+                                                <strong class="font-monospace text-primary me-1">[{{ s.code }}]</strong>{{ s.name }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                        <a href="{{ url_for('admin.rules') }}" class="btn btn-outline-slate rounded-pill px-4">Batal</a>
+                        <button type="submit" class="btn btn-teal rounded-pill px-5">Simpan Aturan</button>
+                    </div>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // JS visual card toggler logic to match the consultation flow
+    document.addEventListener("DOMContentLoaded", function () {
+        const symptomCards = document.querySelectorAll(".symptom-card-check");
+        symptomCards.forEach(card => {
+            const checkbox = card.querySelector("input[type='checkbox']");
+            card.addEventListener("click", function (e) {
+                if (e.target.tagName !== "INPUT") {
+                    checkbox.checked = !checkbox.checked;
+                }
+                
+                if (checkbox.checked) {
+                    card.classList.add("selected-active");
+                } else {
+                    card.classList.remove("selected-active");
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

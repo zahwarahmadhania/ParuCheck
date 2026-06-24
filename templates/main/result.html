@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Hasil Diagnosa - ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container px-md-5 py-5">
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header buttons -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="{{ url_for('main.consultation') }}" class="btn btn-outline-slate rounded-pill px-3">
+                    <i class="fa-solid fa-chevron-left me-2"></i> Konsultasi Baru
+                </a>
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-slate rounded-pill px-3">
+                        <i class="fa-solid fa-print me-2 text-primary"></i> Cetak Halaman
+                    </button>
+                    <a href="{{ url_for('main.result_pdf', history_id=history.id) }}" class="btn btn-teal rounded-pill px-3">
+                        <i class="fa-solid fa-file-pdf me-2"></i> Unduh PDF
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Patient Banner Card -->
+            <div class="card card-modern border-0 bg-primary-subtle text-primary-emphasis p-4 mb-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-8">
+                        <h4 class="fw-bold mb-1"><i class="fa-solid fa-hospital-user me-2"></i>Laporan Diagnostik: {{ history.patient_name }}</h4>
+                        <span class="small font-monospace text-muted-custom">
+                            No. Registrasi: #{{ "%06d"|format(history.id) }} | Tanggal: {{ history.created_at.strftime('%d %B %Y - %H:%M') }}
+                        </span>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <span class="badge bg-primary text-white rounded-pill px-3 py-2 small">
+                            {{ history.patient_age }} Tahun • {% if history.patient_gender == 'L' %}Laki-laki{% else %}Perempuan{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Left Column: Primary Diagnosis Details -->
+                <div class="col-md-8">
+                    <div class="card card-modern p-4 p-md-5 mb-4">
+                        <span class="text-uppercase font-monospace text-muted small mb-2 d-block" style="letter-spacing: 1.5px;">DIAGNOSIS UTAMA</span>
+                        
+                        {% if primary_disease %}
+                            <h2 class="fw-bold text-slate mb-3">{{ primary_disease.name }}</h2>
+                            
+                            <!-- Confidence badge -->
+                            <div class="d-flex align-items-center mb-4 p-3 rounded-4 bg-light">
+                                <div class="me-4 text-center">
+                                    <div class="h2 fw-bold text-success mb-0">{{ "%d"|format(confidence) }}%</div>
+                                    <span class="text-muted small font-monospace">CONFIDENCE</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="progress rounded-pill bg-white border" style="height: 10px;">
+                                        <div class="progress-bar rounded-pill bg-success" role="progressbar" style="width: {{ confidence }}%;" aria-valuenow="{{ confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <span class="text-muted small mt-1 d-block">Gejala yang cocok dengan aturan klinis penyakit.</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Disease Details tabs or cards -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold text-slate mb-2">Deskripsi Penyakit</h5>
+                                <p class="text-slate-muted small leading-lg mb-4">{{ primary_disease.description }}</p>
+                                
+                                <h5 class="fw-bold text-slate mb-2">Penyebab Umum</h5>
+                                <p class="text-slate-muted small leading-lg mb-4">{{ primary_disease.causes }}</p>
+                                
+                                <h5 class="fw-bold text-slate mb-2"><i class="fa-solid fa-prescription-bottle-medical text-teal me-2"></i>Rekomendasi Pengobatan</h5>
+                                <div class="bg-teal-subtle text-teal-emphasis p-3 rounded-4 small mb-4">
+                                    {{ primary_disease.treatment }}
+                                </div>
+                                
+                                <h5 class="fw-bold text-slate mb-2"><i class="fa-solid fa-shield-heart text-primary me-2"></i>Langkah Pencegahan</h5>
+                                <p class="text-slate-muted small leading-lg mb-0">{{ primary_disease.prevention }}</p>
+                            </div>
+                        {% else %}
+                            <h2 class="fw-bold text-danger mb-3">Tidak Teridentifikasi</h2>
+                            <div class="alert alert-warning border-0 rounded-4 p-3 d-flex align-items-center">
+                                <i class="fa-solid fa-circle-exclamation fs-4 text-warning me-3"></i>
+                                <div class="small">
+                                    Gejala yang Anda inputkan tidak mencocokkan satu pun aturan diagnosis klinis paru yang terdaftar secara meyakinkan di database kami.
+                                </div>
+                            </div>
+                            <p class="text-slate-muted small mt-3">
+                                Hal ini dapat disebabkan karena kombinasi gejala yang Anda centang kurang spesifik untuk mendefinisikan suatu diagnosa paru tertentu. Kami merekomendasikan Anda untuk berkonsultasi langsung dengan dokter spesialis paru untuk pemeriksaan fisis menyeluruh (seperti stetoskop atau rontgen paru).
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Right Column: Symptoms and Alternatives -->
+                <div class="col-md-4">
+                    <!-- Symptoms Card -->
+                    <div class="card card-modern p-4 mb-4">
+                        <h6 class="fw-bold text-slate mb-3 border-bottom pb-2">Gejala Terinput ({{ history.symptoms_list|length }})</h6>
+                        <ul class="list-group list-group-flush">
+                            {% for s in history.symptoms_list %}
+                                <li class="list-group-item py-2 border-0 bg-transparent ps-0 small text-slate d-flex align-items-center">
+                                    <i class="fa-solid fa-circle-dot text-primary me-2 fs-8"></i>
+                                    <span>{{ s.name }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <!-- Alternative Diagnosis Card -->
+                    {% if differential_diagnoses %}
+                        <div class="card card-modern p-4">
+                            <h6 class="fw-bold text-slate mb-3 border-bottom pb-2">Kemungkinan Lain</h6>
+                            <div class="d-flex flex-column gap-3">
+                                {% for item in differential_diagnoses %}
+                                    <div class="p-3 border rounded-4 bg-light-subtle">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold text-slate small">{{ item.disease.name }}</span>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis font-monospace px-2 py-1 small">{{ item.confidence }}%</span>
+                                        </div>
+                                        <p class="text-muted mb-0 font-monospace small" style="font-size: 0.75rem;">
+                                            Kecocokan Gejala: {{ item.matched_symptoms_count }}/{{ item.total_rule_symptoms_count }}
+                                        </p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Alert Disclaimer -->
+            <div class="alert alert-slate bg-white border text-muted small p-4 rounded-4 shadow-sm mt-4">
+                <div class="d-flex align-items-start">
+                    <i class="fa-solid fa-triangle-exclamation text-warning me-3 fs-4 mt-1"></i>
+                    <div>
+                        <h6 class="fw-bold text-slate mb-1">PENTING: Pernyataan Penyangkalan (Medical Disclaimer)</h6>
+                        <p class="mb-0 leading-lg text-slate-muted small">
+                            Hasil skrining diagnostik digital dari <strong>ParuCheck</strong> ini hanyalah sebuah analisis sistem pakar berbasis kecocokan gejala awal (Forward Chaining) dan tidak didasarkan pada pemeriksaan fisis laboratorium menyeluruh. Laporan ini tidak dapat dijadikan rujukan hukum diagnosis final pengganti nasehat medis dari dokter, asisten medis, atau layanan rumah sakit profesional. Jika sesak napas bertambah berat atau terjadi kondisi gawat darurat, segera hubungi dokter spesialis paru atau kunjungi Unit Gawat Darurat (UGD) terdekat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+/* Print Layout Override Styles */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+    nav, footer, .btn, button, a {
+        display: none !important;
+    }
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .card {
+        border: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 20px !important;
+    }
+    .col-md-8, .col-md-4 {
+        width: 100% !important;
+        float: none !important;
+    }
+}
+</style>
+{% endblock %}

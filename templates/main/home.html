@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}ParuCheck - Deteksi Dini Penyakit Paru{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-grid-bg py-5 border-bottom">
+    <div class="container px-md-5 my-4">
+        <div class="row align-items-center">
+            <!-- Left Hero Info -->
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge-medical mb-3">
+                    <i class="fa-solid fa-shield-halved me-2"></i> Sistem Pakar Diagnostik Medis
+                </span>
+                <h1 class="display-3 fw-bold text-slate mb-3" style="font-size: 3.5rem;">ParuCheck</h1>
+                <p class="lead fw-medium text-slate mb-2">Deteksi Dini Penyakit Paru Berdasarkan Gejala</p>
+                <p class="text-slate-muted fs-5 mb-4 leading-lg" style="max-width: 540px;">
+                    Asisten diagnostik cerdas untuk mendukung keputusan klinis yang lebih cepat dan akurat dengan metode runut maju (forward chaining).
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('main.consultation') }}" class="btn btn-teal rounded-pill px-4 py-2-5 d-flex align-items-center">
+                        Mulai Konsultasi <i class="fa-solid fa-arrow-right ms-2 fs-7"></i>
+                    </a>
+                    <a href="#rules-explanation" class="btn btn-outline-slate rounded-pill px-4 py-2-5">
+                        <i class="fa-solid fa-circle-info me-2 text-primary"></i> Pelajari Sistem
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right Hero Visual -->
+            <div class="col-lg-6 position-relative d-flex justify-content-center">
+                <!-- SVG Glowing Lung Illustration -->
+                <div class="position-relative" style="width: 100%; max-width: 450px;">
+                    <svg viewBox="0 0 400 350" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background Glows -->
+                        <defs>
+                            <radialGradient id="cyan-glow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#14B8A6" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#14B8A6" stop-opacity="0"/>
+                            </radialGradient>
+                            <radialGradient id="blue-glow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#0EA5E9" stop-opacity="0"/>
+                            </radialGradient>
+                        </defs>
+                        
+                        <circle cx="200" cy="170" r="150" fill="url(#blue-glow)" />
+                        <circle cx="280" cy="180" r="100" fill="url(#cyan-glow)" />
+                        
+                        <!-- Windpipe (Trachea) -->
+                        <path d="M 200,40 L 200,120" stroke="#0EA5E9" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+                        <path d="M 200,70 L 200,110" stroke="#14B8A6" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+                        
+                        <!-- Left Bronchus -->
+                        <path d="M 200,120 Q 180,140 140,160" stroke="#0EA5E9" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.8"/>
+                        <!-- Right Bronchus -->
+                        <path d="M 200,120 Q 220,140 260,160" stroke="#0EA5E9" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.8"/>
+                        
+                        <!-- Left Lung Contour -->
+                        <path d="M 190,120 C 130,80 80,120 70,180 C 60,240 100,280 140,290 C 170,295 180,260 190,250 Z" 
+                              fill="none" stroke="#0EA5E9" stroke-width="2.5" stroke-dasharray="1 1" opacity="0.4"/>
+                        <path d="M 190,120 C 130,80 80,120 70,180 C 60,240 100,280 140,290 C 170,295 180,260 190,250 Z" 
+                              fill="none" stroke="#0EA5E9" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+                              
+                        <!-- Right Lung Contour -->
+                        <path d="M 210,120 C 270,80 320,120 330,180 C 340,240 300,280 260,290 C 230,295 220,260 210,250 Z" 
+                              fill="none" stroke="#0EA5E9" stroke-width="2.5" stroke-dasharray="1 1" opacity="0.4"/>
+                        <path d="M 210,120 C 270,80 320,120 330,180 C 340,240 300,280 260,290 C 230,295 220,260 210,250 Z" 
+                              fill="none" stroke="#0EA5E9" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+                        
+                        <!-- Lung Networks (Nodes & Branches) -->
+                        <!-- Left Lung Nodes -->
+                        <line x1="140" y1="160" x2="110" y2="150" stroke="#14B8A6" stroke-width="2" opacity="0.6"/>
+                        <line x1="140" y1="160" x2="130" y2="200" stroke="#14B8A6" stroke-width="2" opacity="0.6"/>
+                        <line x1="130" y1="200" x2="100" y2="220" stroke="#14B8A6" stroke-width="1.5" opacity="0.5"/>
+                        <line x1="130" y1="200" x2="150" y2="230" stroke="#14B8A6" stroke-width="1.5" opacity="0.5"/>
+                        
+                        <circle cx="140" cy="160" r="4" fill="#0EA5E9" />
+                        <circle cx="110" cy="150" r="3" fill="#14B8A6" />
+                        <circle cx="130" cy="200" r="5" fill="#14B8A6" />
+                        <circle cx="100" cy="220" r="3" fill="#0EA5E9" />
+                        <circle cx="150" cy="230" r="4" fill="#0EA5E9" />
+                        
+                        <!-- Right Lung Networks -->
+                        <line x1="260" y1="160" x2="290" y2="150" stroke="#14B8A6" stroke-width="2" opacity="0.6"/>
+                        <line x1="260" y1="160" x2="270" y2="200" stroke="#14B8A6" stroke-width="2" opacity="0.6"/>
+                        <line x1="270" y1="200" x2="300" y2="220" stroke="#14B8A6" stroke-width="1.5" opacity="0.5"/>
+                        <line x1="270" y1="200" x2="250" y2="230" stroke="#14B8A6" stroke-width="1.5" opacity="0.5"/>
+                        
+                        <circle cx="260" cy="160" r="4" fill="#0EA5E9" />
+                        <circle cx="290" cy="150" r="3" fill="#14B8A6" />
+                        <circle cx="270" cy="200" r="5" fill="#14B8A6" />
+                        <circle cx="300" cy="220" r="3" fill="#0EA5E9" />
+                        <circle cx="250" cy="230" r="4" fill="#0EA5E9" />
+                        
+                        <!-- Digital scanner aesthetic circles -->
+                        <circle cx="200" cy="170" r="130" fill="none" stroke="#0EA5E9" stroke-width="0.5" stroke-dasharray="5 10" opacity="0.5" />
+                        <circle cx="200" cy="170" r="145" fill="none" stroke="#14B8A6" stroke-width="0.75" stroke-dasharray="1 15" opacity="0.7" />
+                    </svg>
+                    
+                    <!-- Floating Information Card -->
+                    <div class="floating-info-card p-3 position-absolute" style="bottom: 15px; left: 10px; right: 10px;">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-teal text-white rounded-3 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fa-solid fa-chart-line fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 text-slate small fw-bold">Analisis Pola Pernapasan</h6>
+                                <span class="text-muted small">Real-time processing</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="pulse-dot me-2"></span>
+                                <span class="text-success small fw-medium">Aktif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-white">
+    <div class="container px-md-5 my-4">
+        <!-- Section Title -->
+        <div class="text-center mb-5">
+            <h2 class="display-6 fw-bold text-slate mb-2">Keunggulan ParuCheck</h2>
+            <p class="text-muted fs-6" style="max-width: 600px; margin: 0 auto;">
+                Dirancang khusus untuk mendukung akurasi diagnostik dengan metodologi teruji.
+            </p>
+        </div>
+        
+        <!-- Features Cards Grid -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card-modern h-100 p-4 d-flex flex-column align-items-start">
+                    <div class="stats-icon blue mb-4">
+                        <i class="fa-solid fa-circle-nodes fs-5"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Expert System Accuracy</h5>
+                    <p class="text-muted mb-0 small leading-lg">
+                        Menggunakan basis pengetahuan dari pakar pulmonologi untuk memberikan probabilitas diagnosis yang tinggi berdasarkan gejala yang diinputkan.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-modern h-100 p-4 d-flex flex-column align-items-start">
+                    <div class="stats-icon teal mb-4">
+                        <i class="fa-regular fa-clock fs-5"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">24/7 Access</h5>
+                    <p class="text-muted mb-0 small leading-lg">
+                        Akses sistem kapan saja dan di mana saja. Cocok untuk skrining awal cepat sebelum melakukan konsultasi fisik lanjutan dengan dokter spesialis.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-modern h-100 p-4 d-flex flex-column align-items-start">
+                    <div class="stats-icon purple mb-4">
+                        <i class="fa-solid fa-file-medical fs-5"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Clinical Data Support</h5>
+                    <p class="text-muted mb-0 small leading-lg">
+                        Terintegrasi dengan parameter klinis standar untuk memastikan setiap hasil skrining memiliki landasan medis yang dapat dipertanggungjawabkan.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Forward Chaining Section -->
+<section id="rules-explanation" class="py-5 border-top" style="background-color: #F8FAFC;">
+    <div class="container px-md-5 my-4">
+        <div class="row align-items-center">
+            <!-- Left Info column -->
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge bg-primary-subtle text-primary fw-semibold rounded-pill px-3 py-2 mb-3" style="font-size: 0.8rem;">
+                    <i class="fa-solid fa-diagram-project me-2"></i> METODOLOGI INFERENSI
+                </span>
+                <h2 class="display-6 fw-bold text-slate mb-3">Forward Chaining Diagnosis</h2>
+                <p class="text-slate-muted mb-4 fs-6 leading-lg">
+                    Sistem kami bekerja menggunakan metode Forward Chaining (runut maju). Proses dimulai dari kumpulan gejala (fakta) yang diinputkan pengguna, kemudian menelusuri aturan (rules) medis hingga mencapai konklusi diagnosis penyakit paru yang paling mungkin.
+                </p>
+                
+                <div class="mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stats-icon blue me-3" style="width:36px; height:36px;">
+                            <i class="fa-solid fa-check fs-6 text-primary"></i>
+                        </div>
+                        <span class="fw-semibold text-slate fs-6">Input Gejala Klinis Awal</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stats-icon teal me-3" style="width:36px; height:36px;">
+                            <i class="fa-solid fa-check fs-6 text-teal"></i>
+                        </div>
+                        <span class="fw-semibold text-slate fs-6">Pencocokan Basis Aturan (Rule Base)</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stats-icon purple me-3" style="width:36px; height:36px;">
+                            <i class="fa-solid fa-check fs-6 text-purple"></i>
+                        </div>
+                        <span class="fw-semibold text-slate fs-6">Kesimpulan Diagnostik Probabilistik</span>
+                    </div>
+                </div>
+                
+                <a href="{{ url_for('main.diseases') }}" class="btn btn-outline-teal rounded-pill px-4">
+                    Lihat Struktur Aturan <i class="fa-solid fa-arrow-right ms-2 fs-7"></i>
+                </a>
+            </div>
+            
+            <!-- Right flowchart column -->
+            <div class="col-lg-6">
+                <div class="flow-diagram-container p-4 p-md-5 d-flex flex-column align-items-center text-center">
+                    <!-- Fact Symptoms -->
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                        <span class="flow-node-symptom">Batuk</span>
+                        <span class="flow-node-symptom">Sesak</span>
+                        <span class="flow-node-symptom">Demam</span>
+                    </div>
+                    
+                    <!-- Arrow 1 -->
+                    <div class="mb-4 text-primary">
+                        <i class="fa-solid fa-arrow-down fs-4"></i>
+                    </div>
+                    
+                    <!-- Rule Engine -->
+                    <div class="flow-node-engine px-4 py-3 mb-4 w-75">
+                        <div class="fw-bold mb-1">Rule Engine</div>
+                        <div class="small fw-normal text-white-50">IF A and B then C</div>
+                    </div>
+                    
+                    <!-- Arrow 2 -->
+                    <div class="mb-4 text-primary">
+                        <i class="fa-solid fa-arrow-down fs-4"></i>
+                    </div>
+                    
+                    <!-- Conclusion -->
+                    <div class="flow-node-result px-4 py-3 bg-white w-75">
+                        <div class="text-danger fw-bold mb-1">Pneumonia</div>
+                        <div class="text-success small fw-semibold">Confidence: 85%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

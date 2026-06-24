@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Informasi Penyakit Paru - ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container px-md-5 py-5">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <span class="badge-medical mb-2">
+            <i class="fa-solid fa-book-medical me-2"></i> Ensiklopedia Paru
+        </span>
+        <h2 class="fw-bold text-slate">Daftar Informasi Penyakit Paru</h2>
+        <p class="text-muted small">Pelajari berbagai jenis penyakit paru-paru, penyebab, gejala pemicu, pengobatan, serta pencegahannya.</p>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 col-lg-6">
+            <form action="{{ url_for('main.diseases') }}" method="GET" class="d-flex shadow-sm rounded-pill overflow-hidden bg-white border p-1">
+                <input type="text" name="search" class="form-control border-0 px-4 py-2 bg-transparent" placeholder="Cari penyakit paru..." value="{{ search }}">
+                <button type="submit" class="btn btn-teal rounded-pill px-4">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i> Cari
+                </button>
+            </form>
+            {% if search %}
+                <div class="text-center mt-3 small text-muted">
+                    Menampilkan hasil pencarian untuk: "<strong>{{ search }}</strong>" | <a href="{{ url_for('main.diseases') }}" class="text-teal text-decoration-none">Reset</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Diseases Card Grid -->
+    <div class="row g-4">
+        {% if diseases %}
+            {% for d_data in diseases %}
+                {% set d = d_data.disease %}
+                {% set symptoms = d_data.symptoms %}
+                <div class="col-md-6">
+                    <div class="card card-modern h-100 p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-primary-subtle text-primary font-monospace rounded-pill px-3 py-1.5 small">{{ d.code }}</span>
+                            <span class="text-muted small"><i class="fa-solid fa- stethoscope text-teal me-1"></i>Sistem Pakar</span>
+                        </div>
+                        <h4 class="fw-bold text-slate mb-3">{{ d.name }}</h4>
+                        <p class="text-slate-muted small leading-lg mb-4">{{ d.description }}</p>
+                        
+                        <!-- Symptoms Badge list -->
+                        <div class="mb-4">
+                            <h6 class="text-uppercase font-monospace text-muted small mb-2" style="letter-spacing:1px;">Gejala Aturan Medis:</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if symptoms %}
+                                    {% for s in symptoms %}
+                                        <span class="badge bg-light text-slate border rounded-pill px-2.5 py-1.5 small" style="font-weight: 500;">{{ s.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted small">Aturan gejala belum diatur.</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Details collapse button -->
+                        <div class="mt-auto border-top pt-3">
+                            <button class="btn btn-outline-teal rounded-pill btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ d.id }}" aria-expanded="false" aria-controls="collapse_{{ d.id }}">
+                                Selengkapnya <i class="fa-solid fa-chevron-down ms-1 fs-8"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Collapsible detail panels -->
+                        <div class="collapse mt-3" id="collapse_{{ d.id }}">
+                            <div class="p-3 bg-light rounded-4 small text-slate-muted leading-lg">
+                                <div class="mb-3">
+                                    <strong class="text-slate"><i class="fa-solid fa-virus me-2 text-danger"></i>Penyebab:</strong>
+                                    <p class="mb-0 mt-1">{{ d.causes or '-' }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <strong class="text-slate"><i class="fa-solid fa-briefcase-medical me-2 text-teal"></i>Rekomendasi Pengobatan:</strong>
+                                    <p class="mb-0 mt-1">{{ d.treatment or '-' }}</p>
+                                </div>
+                                <div class="mb-0">
+                                    <strong class="text-slate"><i class="fa-solid fa-heart-circle-check me-2 text-primary"></i>Langkah Pencegahan:</strong>
+                                    <p class="mb-0 mt-1">{{ d.prevention or '-' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="fa-solid fa-folder-open text-muted display-4 mb-3 d-block"></i>
+                <h5 class="text-muted fw-bold">Penyakit Tidak Ditemukan</h5>
+                <p class="text-muted">Coba gunakan kata kunci pencarian yang lain.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

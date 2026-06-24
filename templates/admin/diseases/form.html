@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Penyakit - Admin ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-2">
+            <div class="admin-sidebar py-4">
+                <div class="px-4 mb-4">
+                    <span class="text-uppercase font-monospace text-muted small" style="letter-spacing:1px;">MENU ADMIN</span>
+                </div>
+                <nav class="d-flex flex-column gap-1">
+                    <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                        <i class="fa-solid fa-gauge me-3"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.diseases') }}" class="sidebar-link active">
+                        <i class="fa-solid fa-virus me-3"></i> Data Penyakit
+                    </a>
+                    <a href="{{ url_for('admin.symptoms') }}" class="sidebar-link">
+                        <i class="fa-solid fa-list-check me-3"></i> Data Gejala
+                    </a>
+                    <a href="{{ url_for('admin.rules') }}" class="sidebar-link">
+                        <i class="fa-solid fa-diagram-project me-3"></i> Basis Aturan
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="sidebar-link">
+                        <i class="fa-solid fa-users me-3"></i> Pengguna
+                    </a>
+                    <hr class="mx-3 my-2 text-black-50">
+                    <a href="{{ url_for('main.home') }}" class="sidebar-link">
+                        <i class="fa-solid fa-house-medical me-3"></i> Web Utama
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Form Column -->
+        <div class="col-lg-10 bg-light-subtle px-4 px-md-5 py-4">
+            <!-- Header section -->
+            <div class="mb-4">
+                <a href="{{ url_for('admin.diseases') }}" class="btn btn-outline-slate btn-sm rounded-pill px-3 mb-3">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Kembali
+                </a>
+                <h3 class="fw-bold text-slate">{{ action }} Data Penyakit Paru</h3>
+                <p class="text-muted small">Silakan lengkapi formulir klinis penyakit di bawah dengan data yang akurat.</p>
+            </div>
+            
+            <!-- Form Card -->
+            <div class="card card-modern border-0 shadow-sm p-4 p-md-5 mb-4">
+                <form method="POST" action="{% if disease %}{{ url_for('admin.disease_edit', id=disease.id) }}{% else %}{{ url_for('admin.disease_add') }}{% endif %}">
+                    <div class="row g-4">
+                        <!-- Code -->
+                        <div class="col-md-3">
+                            <label for="code" class="form-label fw-semibold text-slate small">Kode Penyakit</label>
+                            <input type="text" class="form-control rounded-3 font-monospace" id="code" name="code" 
+                                   value="{% if disease %}{{ disease.code }}{% else %}{{ next_code }}{% endif %}" 
+                                   required placeholder="Contoh: P001">
+                        </div>
+                        
+                        <!-- Name -->
+                        <div class="col-md-9">
+                            <label for="name" class="form-label fw-semibold text-slate small">Nama Penyakit Paru</label>
+                            <input type="text" class="form-control rounded-3" id="name" name="name" 
+                                   value="{% if disease %}{{ disease.name }}{% endif %}" 
+                                   required placeholder="Contoh: Pneumonia">
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label for="description" class="form-label fw-semibold text-slate small">Deskripsi Penyakit</label>
+                            <textarea class="form-control rounded-4" id="description" name="description" rows="3" 
+                                      required placeholder="Masukkan deskripsi medis penyakit paru secara mendalam...">{% if disease %}{{ disease.description }}{% endif %}</textarea>
+                        </div>
+                        
+                        <!-- Causes -->
+                        <div class="col-12">
+                            <label for="causes" class="form-label fw-semibold text-slate small">Penyebab Umum</label>
+                            <textarea class="form-control rounded-4" id="causes" name="causes" rows="2" 
+                                      placeholder="Penyebab infeksi bakteri, virus, atau zat polutan...">{% if disease %}{{ disease.causes }}{% endif %}</textarea>
+                        </div>
+                        
+                        <!-- Treatment -->
+                        <div class="col-12">
+                            <label for="treatment" class="form-label fw-semibold text-slate small">Rekomendasi Pengobatan (Medis / Mandiri)</label>
+                            <textarea class="form-control rounded-4 text-teal-emphasis" id="treatment" name="treatment" rows="3" 
+                                      placeholder="Rincian obat-obatan, rawat jalan, resep, atau inhalasi uap...">{% if disease %}{{ disease.treatment }}{% endif %}</textarea>
+                        </div>
+                        
+                        <!-- Prevention -->
+                        <div class="col-12">
+                            <label for="prevention" class="form-label fw-semibold text-slate small">Langkah Pencegahan</label>
+                            <textarea class="form-control rounded-4" id="prevention" name="prevention" rows="2" 
+                                      placeholder="Tindakan preventif, vaksinasi, masker, pola hidup sehat...">{% if disease %}{{ disease.prevention }}{% endif %}</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit -->
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{{ url_for('admin.diseases') }}" class="btn btn-outline-slate rounded-pill px-4">Batal</a>
+                        <button type="submit" class="btn btn-teal rounded-pill px-5">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

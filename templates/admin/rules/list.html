@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Kelola Aturan - Admin ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-2">
+            <div class="admin-sidebar py-4">
+                <div class="px-4 mb-4">
+                    <span class="text-uppercase font-monospace text-muted small" style="letter-spacing:1px;">MENU ADMIN</span>
+                </div>
+                <nav class="d-flex flex-column gap-1">
+                    <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                        <i class="fa-solid fa-gauge me-3"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.diseases') }}" class="sidebar-link">
+                        <i class="fa-solid fa-virus me-3"></i> Data Penyakit
+                    </a>
+                    <a href="{{ url_for('admin.symptoms') }}" class="sidebar-link">
+                        <i class="fa-solid fa-list-check me-3"></i> Data Gejala
+                    </a>
+                    <a href="{{ url_for('admin.rules') }}" class="sidebar-link active">
+                        <i class="fa-solid fa-diagram-project me-3"></i> Basis Aturan
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="sidebar-link">
+                        <i class="fa-solid fa-users me-3"></i> Pengguna
+                    </a>
+                    <hr class="mx-3 my-2 text-black-50">
+                    <a href="{{ url_for('main.home') }}" class="sidebar-link">
+                        <i class="fa-solid fa-house-medical me-3"></i> Web Utama
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content Column -->
+        <div class="col-lg-10 bg-light-subtle px-4 px-md-5 py-4">
+            <!-- Header Section -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-slate mb-1">Visual IF-THEN Rule Builder</h3>
+                    <p class="text-muted small mb-0">Atur penalaran medis (Forward Chaining) dengan mengaitkan gejala ke penyakit paru-paru.</p>
+                </div>
+                <a href="{{ url_for('admin.rule_add') }}" class="btn btn-teal rounded-pill px-4">
+                    <i class="fa-solid fa-plus me-2"></i> Tambah Aturan Baru
+                </a>
+            </div>
+            
+            <!-- Rules cards stack -->
+            <div class="d-flex flex-column gap-4 mb-4">
+                {% if rules %}
+                    {% for r in rules %}
+                        <div class="card card-modern p-4">
+                            <div class="row align-items-center g-3">
+                                <!-- Rule Identifier -->
+                                <div class="col-md-2 col-lg-1 border-end-md text-center text-md-start">
+                                    <span class="badge bg-primary text-white font-monospace rounded px-3 py-2 fs-6 shadow-sm">{{ r.code }}</span>
+                                </div>
+                                
+                                <!-- Rule Logic display -->
+                                <div class="col-md-7 col-lg-8 ps-md-4">
+                                    <div class="mb-2">
+                                        <span class="text-uppercase font-monospace text-primary-emphasis small fw-bold">IF (Gejala Terpenuhi)</span>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        {% for s in r.symptoms %}
+                                            <span class="badge bg-light text-slate border rounded-pill px-2.5 py-1.5 small" style="font-weight: 500;">
+                                                <span class="font-monospace text-primary me-1">[{{ s.code }}]</span>{{ s.name }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div>
+                                        <span class="text-uppercase font-monospace text-success-emphasis small fw-bold">THEN (Kesimpulan Diagnosa)</span>
+                                        <div class="h5 fw-bold text-slate mt-1 mb-0">
+                                            <i class="fa-solid fa-circle-chevron-right text-success me-2 fs-6"></i>{{ r.disease.name }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Rule Actions -->
+                                <div class="col-md-3 border-start-md text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('admin.rule_edit', id=r.id) }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+                                            <i class="fa-solid fa-pen-to-square"></i> Ubah Aturan
+                                        </a>
+                                        <form action="{{ url_for('admin.rule_delete', id=r.id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus aturan logika ini?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                <i class="fa-solid fa-trash-can"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card card-modern p-5 text-center text-muted">
+                        <i class="fa-solid fa-diagram-project display-4 mb-3 d-block text-black-50"></i>
+                        <h5>Belum Ada Aturan Logika Terdaftar</h5>
+                        <p class="mb-0">Tambahkan aturan IF-THEN baru untuk mengaktifkan diagnosis expert system.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

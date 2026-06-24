@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Masuk Akun - ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container py-5 px-md-5">
+    <div class="row justify-content-center my-5">
+        <div class="col-md-6 col-lg-5">
+            <!-- Login Card -->
+            <div class="card card-modern border-0 shadow-lg p-4 p-md-5 bg-white">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <svg class="mb-3" width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4.5 16.5c-1.5 1.26-2.5 3.19-2.5 5.5h20c0-2.31-1-4.24-2.5-5.5"></path>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                        <circle cx="12" cy="12" r="3" fill="#14B8A6"></circle>
+                    </svg>
+                    <h3 class="fw-bold text-slate">Masuk ke ParuCheck</h3>
+                    <p class="text-muted small">Akses dashboard atau rekam medis konsultasi Anda.</p>
+                </div>
+                
+                <!-- Form -->
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold text-slate small">Nama Pengguna (Username)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="fa-regular fa-user text-muted"></i></span>
+                            <input type="text" class="form-control rounded-end-3 bg-light-subtle" id="username" name="username" placeholder="Masukkan username" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-semibold text-slate small">Kata Sandi</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="fa-solid fa-lock text-muted"></i></span>
+                            <input type="password" class="form-control rounded-end-3 bg-light-subtle" id="password" name="password" placeholder="Masukkan password" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Remember me -->
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label text-slate small" for="remember">Ingat saya di perangkat ini</label>
+                    </div>
+                    
+                    <!-- Submit -->
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-teal rounded-pill py-2-5">
+                            Masuk Akun <i class="fa-solid fa-right-to-bracket ms-2"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Footer Link -->
+                    <div class="text-center">
+                        <span class="text-muted small">Belum punya akun? <a href="{{ url_for('auth.register') }}" class="text-teal text-decoration-none fw-semibold">Daftar Sekarang</a></span>
+                    </div>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

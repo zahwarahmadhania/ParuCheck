@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Konsultasi Diagnostik - ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container px-md-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Title -->
+            <div class="text-center mb-4">
+                <span class="badge-medical mb-2">
+                    <i class="fa-solid fa-stethoscope me-2"></i> Diagnostik Mandiri
+                </span>
+                <h2 class="fw-bold text-slate">Konsultasi Pakar ParuCheck</h2>
+                <p class="text-muted small">Silakan ikuti langkah-langkah di bawah untuk melakukan skrining kesehatan paru-paru Anda.</p>
+            </div>
+            
+            <!-- Progress Tracker -->
+            <div class="card card-modern border-0 shadow-sm p-4 mb-4">
+                <div class="d-flex justify-content-between mb-2 small text-muted font-monospace">
+                    <span>PROGRESS DIAGNOSTIK</span>
+                    <span id="progressText">Wizard Berjalan</span>
+                </div>
+                <div class="progress progress-height bg-light rounded-pill">
+                    <div id="progressBar" class="progress-bar progress-bar-custom rounded-pill" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            
+            <!-- Consultation Wizard Form -->
+            <form id="consultationForm" method="POST" action="{{ url_for('main.consultation') }}">
+                
+                <!-- STEP 1: PATIENT DATA -->
+                <div id="step-1" class="step-container active">
+                    <div class="card card-modern p-4 p-md-5">
+                        <h4 class="fw-bold text-slate mb-4 pb-2 border-bottom">
+                            <i class="fa-regular fa-id-card me-2 text-primary"></i> 1. Identitas Pasien
+                        </h4>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-8">
+                                <label for="patient_name" class="form-label fw-semibold text-slate small">Nama Lengkap Pasien</label>
+                                <input type="text" class="form-control form-control-lg rounded-3 fs-6" id="patient_name" name="patient_name" 
+                                       placeholder="Masukkan nama lengkap Anda" required 
+                                       value="{% if current_user.is_authenticated %}{{ current_user.username }}{% endif %}">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="patient_age" class="form-label fw-semibold text-slate small">Umur Pasien (Tahun)</label>
+                                <input type="number" class="form-control form-control-lg rounded-3 fs-6" id="patient_age" name="patient_age" 
+                                       placeholder="Contoh: 24" min="1" max="120" required>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <label class="form-label fw-semibold text-slate d-block mb-3 small">Jenis Kelamin</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="patient_gender" id="gender_l" value="L" required>
+                                        <label class="form-check-label text-slate fw-medium" for="gender_l">Laki-laki</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="patient_gender" id="gender_p" value="P" required>
+                                        <label class="form-check-label text-slate fw-medium" for="gender_p">Perempuan</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STEP 2: SYMPTOMS SELECTION -->
+                <div id="step-2" class="step-container">
+                    <div class="card card-modern p-4 p-md-5">
+                        <h4 class="fw-bold text-slate mb-2 pb-2 border-bottom">
+                            <i class="fa-solid fa-list-check me-2 text-primary"></i> 2. Pemilihan Gejala Paru
+                        </h4>
+                        <p class="text-muted small mb-4">Centang setiap gejala klinis yang Anda rasakan selama beberapa waktu terakhir.</p>
+                        
+                        {% for category, symptoms in grouped_symptoms.items() %}
+                            <div class="mb-5">
+                                <h6 class="text-primary fw-bold text-uppercase mb-3 font-monospace" style="letter-spacing: 1px;">
+                                    Gejala Kelompok {{ category }}
+                                </h6>
+                                <div class="row g-3">
+                                    {% for s in symptoms %}
+                                        <div class="col-md-6 col-lg-4">
+                                            <div class="symptom-card-check h-100">
+                                                <input type="checkbox" name="symptoms" id="symptom_{{ s.id }}" value="{{ s.id }}">
+                                                <div class="checkmark"></div>
+                                                <span class="symptom-name-text text-slate small">{{ s.name }}</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- STEP 3: CONFIRMATION SUMMARY -->
+                <div id="step-3" class="step-container">
+                    <div class="card card-modern p-4 p-md-5">
+                        <h4 class="fw-bold text-slate mb-4 pb-2 border-bottom">
+                            <i class="fa-solid fa-clipboard-check me-2 text-primary"></i> 3. Konfirmasi Data
+                        </h4>
+                        
+                        <div class="row g-4 mb-4">
+                            <!-- Left: Patient Data Summary -->
+                            <div class="col-md-5 border-end-md">
+                                <h6 class="text-slate fw-bold mb-3">Identitas Pasien</h6>
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td class="text-muted w-40 small py-2">Nama Pasien:</td>
+                                        <td id="summary-name" class="fw-semibold text-slate small py-2">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted w-40 small py-2">Umur Pasien:</td>
+                                        <td id="summary-age" class="fw-semibold text-slate small py-2">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted w-40 small py-2">Jenis Kelamin:</td>
+                                        <td id="summary-gender" class="fw-semibold text-slate small py-2">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <!-- Right: Selected Symptoms List -->
+                            <div class="col-md-7 ps-md-4">
+                                <h6 class="text-slate fw-bold mb-3">Gejala yang Dipilih</h6>
+                                <div class="overflow-y-auto max-height-300">
+                                    <ul id="summary-symptoms-list" class="list-group list-group-flush">
+                                        <!-- Loaded Dynamically by JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info border-0 rounded-4 p-3 d-flex align-items-center mb-0">
+                            <i class="fa-solid fa-circle-info text-primary me-3 fs-5"></i>
+                            <div class="small">
+                                Dengan mengklik tombol <strong>Kirim Diagnostik</strong> di bawah, data Anda akan diproses oleh mesin inferensi forward chaining untuk mencari kecocokan aturan diagnosa paru.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- NAVIGATION WIZARD BUTTONS -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-slate rounded-pill px-4 py-2" id="prevBtn" style="display: none;">
+                        <i class="fa-solid fa-chevron-left me-2"></i> Sebelumnya
+                    </button>
+                    <button type="button" class="btn btn-teal rounded-pill px-4 py-2 ms-auto" id="nextBtn">
+                        Selanjutnya <i class="fa-solid fa-chevron-right ms-2"></i>
+                    </button>
+                    <button type="submit" class="btn btn-teal rounded-pill px-5 py-2 ms-auto" id="submitBtn" style="display: none;">
+                        Kirim Diagnostik <i class="fa-solid fa-check ms-2"></i>
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/consultation.js') }}"></script>
+{% endblock %}

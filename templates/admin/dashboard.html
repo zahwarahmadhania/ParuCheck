@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-2">
+            <div class="admin-sidebar py-4">
+                <div class="px-4 mb-4">
+                    <span class="text-uppercase font-monospace text-muted small" style="letter-spacing:1px;">MENU ADMIN</span>
+                </div>
+                <nav class="d-flex flex-column gap-1">
+                    <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link active">
+                        <i class="fa-solid fa-gauge me-3"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.diseases') }}" class="sidebar-link">
+                        <i class="fa-solid fa-virus me-3"></i> Data Penyakit
+                    </a>
+                    <a href="{{ url_for('admin.symptoms') }}" class="sidebar-link">
+                        <i class="fa-solid fa-list-check me-3"></i> Data Gejala
+                    </a>
+                    <a href="{{ url_for('admin.rules') }}" class="sidebar-link">
+                        <i class="fa-solid fa-diagram-project me-3"></i> Basis Aturan
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="sidebar-link">
+                        <i class="fa-solid fa-users me-3"></i> Pengguna
+                    </a>
+                    <hr class="mx-3 my-2 text-black-50">
+                    <a href="{{ url_for('main.home') }}" class="sidebar-link">
+                        <i class="fa-solid fa-house-medical me-3"></i> Web Utama
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Dashboard Content -->
+        <div class="col-lg-10 bg-light-subtle px-4 px-md-5 py-4">
+            <!-- Header Section -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-slate mb-1">Ringkasan Sistem Pakar</h3>
+                    <p class="text-muted small mb-0">Selamat datang, Administrator. Kelola basis aturan dan pantau aktivitas konsultasi.</p>
+                </div>
+                <div class="text-muted small">
+                    <i class="fa-regular fa-calendar-days me-2"></i> Hari Ini: <span class="fw-medium text-slate">{{ current_time }}</span>
+                </div>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stats-card h-100 d-flex align-items-center">
+                        <div class="stats-icon blue me-3">
+                            <i class="fa-solid fa-virus"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small d-block">Total Penyakit</span>
+                            <h3 class="fw-bold text-slate mb-0">{{ total_diseases }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stats-card h-100 d-flex align-items-center">
+                        <div class="stats-icon teal me-3">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small d-block">Total Gejala</span>
+                            <h3 class="fw-bold text-slate mb-0">{{ total_symptoms }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stats-card h-100 d-flex align-items-center">
+                        <div class="stats-icon purple me-3">
+                            <i class="fa-solid fa-diagram-project"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small d-block">Total Aturan</span>
+                            <h3 class="fw-bold text-slate mb-0">{{ total_rules }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="stats-card h-100 d-flex align-items-center">
+                        <div class="stats-icon green me-3">
+                            <i class="fa-solid fa-notes-medical"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small d-block">Total Konsultasi</span>
+                            <h3 class="fw-bold text-slate mb-0">{{ total_diagnoses }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Graph and Recent Activity Row -->
+            <div class="row g-4 mb-4">
+                <!-- Diagnosis Distribution Chart (Chart.js) -->
+                <div class="col-xl-6">
+                    <div class="card card-modern h-100 p-4">
+                        <h5 class="fw-bold text-slate mb-4 border-bottom pb-2">Distribusi Hasil Diagnosis</h5>
+                        <div style="position: relative; height:300px; width:100%">
+                            <canvas id="diagnosisChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Consultations -->
+                <div class="col-xl-6">
+                    <div class="card card-modern h-100 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                            <h5 class="fw-bold text-slate mb-0">Konsultasi Terbaru</h5>
+                            <a href="{{ url_for('main.history') }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">Lihat Semua</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr class="small text-muted font-monospace border-bottom">
+                                        <th class="py-2">PASIEN</th>
+                                        <th class="py-2">DIAGNOSIS</th>
+                                        <th class="py-2 text-center">CONFD.</th>
+                                        <th class="py-2 text-end">TANGGAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if recent_diagnoses %}
+                                        {% for r in recent_diagnoses %}
+                                            <tr>
+                                                <td class="py-3">
+                                                    <div class="fw-semibold text-slate small">{{ r.patient_name }}</div>
+                                                    <span class="text-muted small" style="font-size:0.75rem;">
+                                                        {{ r.patient_age }} Thn / {% if r.patient_gender == 'L' %}Laki-laki{% else %}Perempuan{% endif %}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if r.disease %}
+                                                        <span class="badge bg-primary-subtle text-primary rounded-pill small">{{ r.disease.name }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning-subtle text-warning rounded-pill small">Unresolved</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center font-monospace fw-bold text-slate small">{{ "%d"|format(r.confidence_percentage) }}%</td>
+                                                <td class="text-end text-muted small" style="font-size:0.75rem;">{{ r.created_at.strftime('%d %b %H:%M') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5">
+                                                <span class="text-muted small">Belum ada riwayat aktivitas.</span>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ChartJS Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Load data injected from Flask backend
+        const chartRawData = JSON.parse('{{ chart_data | safe }}');
+        
+        const ctx = document.getElementById('diagnosisChart').getContext('2d');
+        
+        if (chartRawData.values.length === 0) {
+            // Draw empty state text if no data exists
+            ctx.font = "14px Poppins";
+            ctx.fillStyle = "#64748B";
+            ctx.textAlign = "center";
+            ctx.fillText("Belum ada data diagnosa untuk ditampilkan.", 150, 150);
+            return;
+        }
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: chartRawData.labels,
+                datasets: [{
+                    label: 'Jumlah Diagnosis',
+                    data: chartRawData.values,
+                    backgroundColor: [
+                        '#0EA5E9', // Sky Blue
+                        '#14B8A6', // Teal
+                        '#6B21A8', // Purple
+                        '#EF4444', // Danger/Red
+                        '#F59E0B', // Warning/Orange
+                        '#10B981', // Emerald Green
+                        '#CBD5E1'  // Grey (Unresolved)
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                family: 'Poppins',
+                                size: 11
+                            },
+                            boxWidth: 12,
+                            padding: 15
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    });
+</script>
+{% endblock %}

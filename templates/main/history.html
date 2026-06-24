@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Riwayat Diagnosa - ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container px-md-5 py-5">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <span class="badge-medical mb-2">
+            <i class="fa-solid fa-clock-rotate-left me-2"></i> Log Diagnostik
+        </span>
+        <h2 class="fw-bold text-slate">Riwayat Konsultasi Medis</h2>
+        <p class="text-muted small">Cari dan kelola data rekam medis skrining paru-paru Anda yang tersimpan di sistem.</p>
+    </div>
+    
+    <!-- Filter Card -->
+    <div class="card card-modern border-0 shadow-sm p-4 mb-4">
+        <form action="{{ url_for('main.history') }}" method="GET" class="row g-3 align-items-end">
+            <!-- Search -->
+            <div class="col-md-4">
+                <label for="search" class="form-label fw-semibold text-slate small">Nama Pasien</label>
+                <input type="text" id="search" name="search" class="form-control rounded-3" placeholder="Masukkan nama pasien..." value="{{ search }}">
+            </div>
+            
+            <!-- Gender -->
+            <div class="col-md-3">
+                <label for="gender" class="form-label fw-semibold text-slate small">Jenis Kelamin</label>
+                <select id="gender" name="gender" class="form-select rounded-3">
+                    <option value="">Semua</option>
+                    <option value="L" {% if gender == 'L' %}selected{% endif %}>Laki-laki</option>
+                    <option value="P" {% if gender == 'P' %}selected{% endif %}>Perempuan</option>
+                </select>
+            </div>
+            
+            <!-- Disease filter -->
+            <div class="col-md-3">
+                <label for="disease_id" class="form-label fw-semibold text-slate small">Hasil Diagnosis</label>
+                <select id="disease_id" name="disease_id" class="form-select rounded-3">
+                    <option value="">Semua Penyakit</option>
+                    {% for d in diseases %}
+                        <option value="{{ d.id }}" {% if disease_id|string == d.id|string %}selected{% endif %}>{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Filter buttons -->
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-teal rounded-pill">
+                    <i class="fa-solid fa-filter me-2"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- History Table -->
+    <div class="card card-modern border-0 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-slate fw-bold">
+                    <tr>
+                        <th class="ps-4 py-3 small">NO. REGISTRASI</th>
+                        <th class="py-3 small">NAMA PASIEN</th>
+                        <th class="py-3 small">UMUR / GENDER</th>
+                        <th class="py-3 small">HASIL DIAGNOSIS</th>
+                        <th class="py-3 small text-center">TINGKAT KEYAKINAN</th>
+                        <th class="py-3 small">TANGGAL</th>
+                        <th class="pe-4 py-3 small text-center">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if histories %}
+                        {% for h in histories %}
+                            <tr>
+                                <td class="ps-4 font-monospace fw-semibold text-slate small">#{{ "%06d"|format(h.id) }}</td>
+                                <td class="fw-semibold text-slate small">{{ h.patient_name }}</td>
+                                <td>
+                                    <span class="small text-slate">
+                                        {{ h.patient_age }} Tahun / {% if h.patient_gender == 'L' %}Laki-laki{% else %}Perempuan{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if h.disease %}
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1.5 small">{{ h.disease.name }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-2.5 py-1.5 small">Tidak Teridentifikasi</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center font-monospace fw-bold {% if h.confidence_percentage >= 70 %}text-success{% else %}text-warning{% endif %}">
+                                    {{ "%d"|format(h.confidence_percentage) }}%
+                                </td>
+                                <td class="text-muted small">{{ h.created_at.strftime('%d %b %Y - %H:%M') }}</td>
+                                <td class="pe-4 text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('main.result', history_id=h.id) }}" class="btn btn-outline-slate btn-sm rounded-pill px-3">
+                                            <i class="fa-regular fa-eye text-primary"></i> Detail
+                                        </a>
+                                        <a href="{{ url_for('main.result_pdf', history_id=h.id) }}" class="btn btn-teal btn-sm rounded-pill px-3">
+                                            <i class="fa-solid fa-file-pdf"></i> PDF
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="fa-solid fa-folder-open text-muted display-4 mb-3 d-block"></i>
+                                <h5 class="text-muted fw-bold">Belum Ada Riwayat Konsultasi</h5>
+                                <p class="text-muted">Lakukan konsultasi pertama Anda untuk menyimpan catatan diagnostik.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

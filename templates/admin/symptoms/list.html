@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Kelola Gejala - Admin ParuCheck{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-2">
+            <div class="admin-sidebar py-4">
+                <div class="px-4 mb-4">
+                    <span class="text-uppercase font-monospace text-muted small" style="letter-spacing:1px;">MENU ADMIN</span>
+                </div>
+                <nav class="d-flex flex-column gap-1">
+                    <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                        <i class="fa-solid fa-gauge me-3"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.diseases') }}" class="sidebar-link">
+                        <i class="fa-solid fa-virus me-3"></i> Data Penyakit
+                    </a>
+                    <a href="{{ url_for('admin.symptoms') }}" class="sidebar-link active">
+                        <i class="fa-solid fa-list-check me-3"></i> Data Gejala
+                    </a>
+                    <a href="{{ url_for('admin.rules') }}" class="sidebar-link">
+                        <i class="fa-solid fa-diagram-project me-3"></i> Basis Aturan
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="sidebar-link">
+                        <i class="fa-solid fa-users me-3"></i> Pengguna
+                    </a>
+                    <hr class="mx-3 my-2 text-black-50">
+                    <a href="{{ url_for('main.home') }}" class="sidebar-link">
+                        <i class="fa-solid fa-house-medical me-3"></i> Web Utama
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content Column -->
+        <div class="col-lg-10 bg-light-subtle px-4 px-md-5 py-4">
+            <!-- Header Section -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-slate mb-1">Manajemen Data Gejala</h3>
+                    <p class="text-muted small mb-0">Kelola dan klasifikasikan gejala medis paru-paru dalam sistem.</p>
+                </div>
+                <a href="{{ url_for('admin.symptom_add') }}" class="btn btn-teal rounded-pill px-4">
+                    <i class="fa-solid fa-plus me-2"></i> Tambah Gejala
+                </a>
+            </div>
+            
+            <!-- Search Filter Card -->
+            <div class="card card-modern border-0 shadow-sm p-4 mb-4">
+                <form action="{{ url_for('admin.symptoms') }}" method="GET" class="row g-3">
+                    <div class="col-md-9">
+                        <input type="text" name="search" class="form-control rounded-3" placeholder="Cari nama gejala atau kode..." value="{{ search }}">
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        <button type="submit" class="btn btn-primary-custom rounded-pill">
+                            <i class="fa-solid fa-magnifying-glass me-2"></i> Cari
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Data Table Card -->
+            <div class="card card-modern border-0 shadow-sm overflow-hidden mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-slate fw-bold">
+                            <tr>
+                                <th class="ps-4 py-3 small" style="width: 15%;">KODE</th>
+                                <th class="py-3 small" style="width: 50%;">NAMA GEJALA</th>
+                                <th class="py-3 small" style="width: 15%;">KELOMPOK</th>
+                                <th class="pe-4 py-3 small text-center" style="width: 20%;">AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if symptoms %}
+                                {% for s in symptoms %}
+                                    <tr>
+                                        <td class="ps-4 font-monospace fw-semibold text-slate small">{{ s.code }}</td>
+                                        <td class="fw-semibold text-slate small">{{ s.name }}</td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill small">
+                                                {{ s.category or 'Umum' }}
+                                            </span>
+                                        </td>
+                                        <td class="pe-4 text-center">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <a href="{{ url_for('admin.symptom_edit', id=s.id) }}" class="btn btn-outline-teal btn-sm rounded-pill px-3">
+                                                    <i class="fa-solid fa-pen-to-square"></i> Ubah
+                                                </a>
+                                                <form action="{{ url_for('admin.symptom_delete', id=s.id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data gejala ini? Gejala ini juga akan dilepas dari semua aturan medis.');">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                        <i class="fa-solid fa-trash-can"></i> Hapus
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <span class="text-muted">Tidak ada data gejala ditemukan.</span>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pagination Controls -->
+            {% if pagination.pages > 1 %}
+                <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                    <ul class="pagination pagination-sm">
+                        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link rounded-start-pill" href="{{ url_for('admin.symptoms', page=pagination.prev_num, search=search) }}">Previous</a>
+                        </li>
+                        {% for page_num in pagination.iter_pages() %}
+                            {% if page_num %}
+                                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('admin.symptoms', page=page_num, search=search) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link rounded-end-pill" href="{{ url_for('admin.symptoms', page=pagination.next_num, search=search) }}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
